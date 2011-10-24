@@ -3,8 +3,8 @@ package dk.rmstjerne.aiclass.search
 import collection.mutable.HashSet
 import akka.actor.Actor
 import akka.config.Supervision._
-import informedsearch.AStarSearch
-import uninformedsearch.{DepthFirstSearch, DepthFirstTreeSearch, BreadthFirstSearch, BreadthFirstTreeSearch}
+import informed.AStarSearch
+import uninformed.{DepthFirstSearch, DepthFirstTreeSearch, BreadthFirstSearch, BreadthFirstTreeSearch}
 
 /**
  * Collection of general search algorithms.

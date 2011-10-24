@@ -107,8 +107,6 @@ trait MemoryBasedTableStorageFactory[P,A] { this: Actor =>
  */
 class TableDrivenAgentService[P,A] private (data: Map[P, A]) extends Agent with TableDrivenAgent with MemoryBasedTableStorageFactory[P,A] {
   override def preStart() {
-    remote.start("localhost", 8270)
-    remote.register("agent:table_driven", self)
     table ! InitTableStorage(data)
   }
 
@@ -179,11 +177,11 @@ class DepthFirstSearchAgentService[S](graph: Graph[S]) extends Agent with Simple
   protected def formulateProblem(startState: S,  goalState: S) = GraphProblem(startState, goalState, graph)
 }
 
-trait AStartSearchFactory[S] {this: Actor =>
+trait AStarSearchFactory[S] {this: Actor =>
   val searchService = actorOf(new AStarSearchService[S]).start()
   self.link(searchService)
 }
 
-class AStarSearchAgentService[S](graph: Graph[S]) extends Agent with SimpleSearchAgent[S] with AStartSearchFactory[S] {
+class AStarSearchAgentService[S](graph: Graph[S]) extends Agent with SimpleSearchAgent[S] with AStarSearchFactory[S] {
   protected def formulateProblem(startState: S,  goalState: S) = GraphProblem(startState, goalState, graph)
 }
