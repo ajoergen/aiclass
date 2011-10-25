@@ -1,3 +1,12 @@
 A small fun project for implementing code for the online Stanford class
 
 Introduction to Artificial Intelligence.
+
+To build the projecct:
+  sbt compile
+
+To generate In ntellij idea project:
+  sbt gen-idea
+
+To run unit tests:
+  sbt test
