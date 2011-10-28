@@ -32,8 +32,8 @@ class UninformedSearchTest extends FeatureSpec with GivenWhenThen with MustMatch
       then("The breadth first search service is running and answering the PerformSearch requests.")
       bfsService.isRunning && bfsService.isDefinedAt(PerformSearch) must  be (true)
 
-      and("Within 100 milliseconds the breadth first service can find the path 'Arad->Sibiu->Faragas->Bucharest'")
-      within (100 millis) {
+      and("Within 200 milliseconds the breadth first service can find the path 'Arad->Sibiu->Faragas->Bucharest'")
+      within (200 millis) {
         bfsService ! PerformSearch(problem)
         expectMsg(Goal(List(SearchAction('Sibiu), SearchAction('Fagaras), SearchAction('Bucharest))))
       }
@@ -44,8 +44,8 @@ class UninformedSearchTest extends FeatureSpec with GivenWhenThen with MustMatch
       then("The depth first service should be running, and be able to receive PerformSearch requests.")
       dfsService.isRunning && dfsService.isDefinedAt(PerformSearch) must be (true)
 
-      and("Within 100 milliseconds the depth forst search agent return the path 'Arad->Timisuara->Lugoj->Mehadi->Dobreta->Craiova->Pitesti->Bucharest'")
-      within(100 millis) {
+      and("Within 200 milliseconds the depth forst search agent return the path 'Arad->Timisuara->Lugoj->Mehadi->Dobreta->Craiova->Pitesti->Bucharest'")
+      within(200 millis) {
         dfsService ! PerformSearch(problem)
         expectMsg(Goal(List(SearchAction('Timisoara), SearchAction('Lugoj), SearchAction('Mehadia), SearchAction('Dobreta), SearchAction('Craiova), SearchAction('Pitesti), SearchAction('Bucharest))))
       }

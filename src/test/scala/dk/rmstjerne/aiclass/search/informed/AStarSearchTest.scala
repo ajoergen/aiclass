@@ -28,8 +28,8 @@ class AStarSearchTest extends FeatureSpec with BeforeAndAfterAll with GivenWhenT
       given("I define a problem giving Arad as starting point and Bucharest as goal, and the graph over routes in Romania")
       then("The actor should be running and able to receive PerformSearch requests")
       aStar.isRunning && aStar.isDefinedAt(PerformSearch) must be (true)
-      and("The correct anwer should be available within 100 milliseconds")
-      within(100 millis) {
+      and("The correct anwer should be available within 200 milliseconds")
+      within(200 millis) {
         aStar ! PerformSearch(problem)
         expectMsg(Goal(List(SearchAction('Sibiu), SearchAction('RimnicuVilcea), SearchAction('Pitesti), SearchAction('Bucharest))))
       }
