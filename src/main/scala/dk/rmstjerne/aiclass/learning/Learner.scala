@@ -40,17 +40,19 @@ trait Learner extends Actor {
  */
 class NaiveBayesLearner(valueExtractor: (String => List[String]), val k: Double = 0) extends Learner {
   /**
-   * BayesNet maps class to (P(class), List(value)) - We use lazy evaluation of the values P(value|class), so
+   * BayesNet maps class to (P(class), Bag of Words) - We use lazy evaluation of the values P(value|class), so
    * it's not included in the data structure.
    */
-  val bayesNet = HashMap[Symbol, (Double, List[String])]()
+  val bayesNet = HashMap[Symbol, (Double, Map[String, Int])]()
   val valueSet = HashSet[String]()
 
   private def extractValues(list: List[String]) = {
-    var result = List[String]()
+    var result = HashMap[String, Int]()
     list.foreach(valueExtractor(_).foreach(v => {
       valueSet += v
-      result = result ::: List(v)
+      if (!result.keySet.contains(v))
+        result += (v -> 0)
+      result += (v -> (result(v) + 1))
     }))
     result
   }
@@ -68,8 +70,8 @@ class NaiveBayesLearner(valueExtractor: (String => List[String]), val k: Double 
   private def deriveProbabilitiesForValue(value: String, classes: Iterable[Symbol]) = {
     var result = HashMap[Symbol, Double]()
     classes.foreach(c => {
-      val valueCountForClass = bayesNet(c)._2.filter(_ == value).size
-      val totalCountForClass = bayesNet(c)._2.size
+      val valueCountForClass = bayesNet(c)._2.getOrElse(value, 0)
+      val totalCountForClass = bayesNet(c)._2.values.sum
       result += (c -> probability(valueCountForClass, totalCountForClass, valueSet.size))
     })
     result

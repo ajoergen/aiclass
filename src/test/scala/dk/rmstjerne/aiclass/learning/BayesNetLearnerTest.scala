@@ -53,7 +53,7 @@ class BayesNetLearnerTest extends FeatureSpec with BeforeAndAfterAll with GivenW
 
       then("The result should be movie")
       val (titleClass, probability) = result.prediction
-      (probability > 0.5) && (titleClass == 'Movie) should be (true)
+      (probability == 0.8571428571428572) && (titleClass == 'Movie) should be (true)
     }
   }
   feature("I can send a Precict query, and get the most probable class") {
@@ -63,7 +63,7 @@ class BayesNetLearnerTest extends FeatureSpec with BeforeAndAfterAll with GivenW
       val result = (movieAndSongLearnerRef ? Predict("Perfect Storm")).as[Prediction].getOrElse(throw new Exception("Unable to get prediction"))
       and("The resulting class will be a song")
       val (titleClass, probability) = result.prediction
-      (probability > 0.5) && (titleClass == 'Song) should be (true)
+      (probability == 0.5714285714285715) && (titleClass == 'Song) should be (true)
     }
   }
 
@@ -79,9 +79,9 @@ class BayesNetLearnerTest extends FeatureSpec with BeforeAndAfterAll with GivenW
 
       then("I can classify messages based on the training set.")
       var result = spamAndHamLearner.predict("Sports")
-      (result._2 > .5) && (result._1 == 'Ham) must be (true)
+      (result._2 == 0.8333333333333334) && (result._1 == 'Ham) must be (true)
       result = spamAndHamLearner.predict("Secret Is Secret")
-      (result._2 > .5) && (result._1 == 'Spam) must be (true)
+      (result._2 == 0.9615384615384616) && (result._1 == 'Spam) must be (true)
 
       and("A query not in the spam bag of words must yield 'Ham with probability 1.0")
       result = spamAndHamLearner.predict("Today Is Secret")
@@ -95,9 +95,9 @@ class BayesNetLearnerTest extends FeatureSpec with BeforeAndAfterAll with GivenW
       then("I can call predict with \"Today Is Secret\" through the actor interface")
       val result = (spamAndHamLearnerRefWithLaplaceRef ? Predict("Today Is Secret")).as[Prediction].getOrElse(throw new Exception("Unable to retrieve prediction"))
 
-      and("The result is 'Ham with a certainty between .5 and 1.0")
+      and("The result is 'Ham with a certainty of 0.5142428785607196")
       val (classification, probability) = result.prediction
-      (classification == 'Ham) && (probability < 1.0) && (probability >= .5) must be(true)
+      (classification == 'Ham) && (probability == 0.5142428785607196) must be(true)
     }
   }
 }
