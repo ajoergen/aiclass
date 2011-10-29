@@ -5,7 +5,7 @@ Introduction to Artificial Intelligence.
 To build the projecct:
   sbt compile
 
-To generate In ntellij idea project:
+To generate IntelliJ idea project:
   sbt gen-idea
 
 To run unit tests:
