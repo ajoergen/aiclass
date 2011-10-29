@@ -1,8 +1,9 @@
 package dk.rmstjerne.aiclass.learning
 
 import akka.actor.Actor
-import collection.mutable.{HashSet, HashMap, Map}
+import collection.mutable.{HashSet, Map}
 import collection.Iterable
+import akka.stm._
 
 /**
  * Code for machine learning
@@ -43,44 +44,14 @@ class NaiveBayesLearner(valueExtractor: (String => List[String]), val k: Double 
    * BayesNet maps class to (P(class), Bag of Words) - We use lazy evaluation of the values P(value|class), so
    * it's not included in the data structure.
    */
-  val bayesNet = HashMap[Symbol, (Double, Map[String, Int])]()
+  val bayesNet = TransactionalMap[Symbol, (Double, Map[String, Int])]()
   val valueSet = HashSet[String]()
-
-  private def extractValues(list: List[String]) = {
-    var result = HashMap[String, Int]()
-    list.foreach(valueExtractor(_).foreach(v => {
-      valueSet += v
-      if (!result.keySet.contains(v))
-        result += (v -> 0)
-      result += (v -> (result(v) + 1))
-    }))
-    result
-  }
 
   def train(dataSet: DataSet) {
     for (classValue <- dataSet.classes()) {
       val probClass = probability(dataSet.valueSetSizeForClass(classValue), dataSet.totalValuesSetSize, dataSet.classes().size)
-      bayesNet += (classValue -> (probClass, extractValues(dataSet.values(classValue))))
+      atomic { bayesNet += (classValue -> (probClass, extractValues(dataSet.values(classValue)))) }
     }
-  }
-
-  /**
-   * Calculates the probabilities P(value|class) for all classes.
-   */
-  private def deriveProbabilitiesForValue(value: String, classes: Iterable[Symbol]) = {
-    var result = HashMap[Symbol, Double]()
-    classes.foreach(c => {
-      val valueCountForClass = bayesNet(c)._2.getOrElse(value, 0)
-      val totalCountForClass = bayesNet(c)._2.values.sum
-      result += (c -> probability(valueCountForClass, totalCountForClass, valueSet.size))
-    })
-    result
-  }
-
-  private def createProbabilityMap(value: String) = {
-    val probMap = HashMap[String, Map[Symbol, Double]]()
-    valueExtractor(value).foreach(v => probMap += (v -> deriveProbabilitiesForValue (v, bayesNet.keys)))
-    probMap
   }
 
   def predict(query: String) = {
@@ -98,6 +69,38 @@ class NaiveBayesLearner(valueExtractor: (String => List[String]), val k: Double 
 
   private def probability(valueCountGiven: Int, totalCountGiven: Int, totalOutcomes: Int) = {
     (valueCountGiven + k)/(totalCountGiven + k*totalOutcomes)
+  }
+
+  /**
+   * Calculates the probabilities P(value|class) for all classes.
+   */
+  private def deriveProbabilitiesForValue(value: String, classes: Iterable[Symbol]) = {
+    var result = TransactionalMap[Symbol, Double]()
+    classes.foreach(c => {
+      val valueCountForClass = bayesNet(c)._2.getOrElse(value, 0)
+      val totalCountForClass = bayesNet(c)._2.values.sum
+      atomic {result += (c -> probability(valueCountForClass, totalCountForClass, valueSet.size))}
+    })
+    result
+  }
+
+  private def createProbabilityMap(value: String) = {
+    val probMap = TransactionalMap[String, Map[Symbol, Double]]()
+    atomic { valueExtractor(value).foreach(v => probMap += (v -> deriveProbabilitiesForValue (v, bayesNet.keys))) }
+    probMap
+  }
+
+  private def extractValues(list: List[String]) = {
+    var result = TransactionalMap[String, Int]()
+    list.foreach(valueExtractor(_).foreach(v => {
+      valueSet += v
+      atomic {
+        if (!result.keySet.contains(v))
+          result += (v -> 0)
+        result += (v -> (result(v) + 1))
+      }
+    }))
+    result
   }
 }
 

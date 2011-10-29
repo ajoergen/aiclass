@@ -61,7 +61,7 @@ class BayesNetLearnerTest extends FeatureSpec with BeforeAndAfterAll with GivenW
     scenario("With a trained BayesNet I can predict the class of an unknwon title") {
       then("Sending a Predict request for \"Perfect Storm\" should give a result")
       val result = (movieAndSongLearnerRef ? Predict("Perfect Storm")).as[Prediction].getOrElse(throw new Exception("Unable to get prediction"))
-      and("The resulting class will be a song")
+      and("The resulting class will be a 'Song")
       val (titleClass, probability) = result.prediction
       (probability == 0.5714285714285715) && (titleClass == 'Song) should be (true)
     }
